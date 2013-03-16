@@ -1,6 +1,8 @@
 Terrain Erosion
 ===========
 
+![ScreenShot](https://raw.github.com/karhu/terrain-erosion/master/screenshot.png)
+
 A realtime terrain erosion & fluid simulation running on the CPU. The simulation is implemented in C++ on the CPU and parallelized using OpenMP. Rendering is done using OpenGL. We use the eulerian or grid-based approach to fluid simulation to implement the shallow water equations and hydraulic erosion on a height field terrain.
 
 Based on the following papers:

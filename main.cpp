@@ -88,6 +88,8 @@ int main(int argc, char** argv)
 #if defined(__APPLE__) || defined(__MACH__)
     // Do nothing
 #else
+    // http://stackoverflow.com/questions/8302625/segmentation-fault-at-glgenvertexarrays-1-vao
+    glewExperimental = GL_TRUE;
     GLenum err = glewInit();
     if (GLEW_OK != err)
     {

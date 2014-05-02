@@ -19,17 +19,7 @@
 
 
 using namespace std;
-#if defined(__APPLE__) || defined(__MACH__)
-// for Mac
 using namespace glm;
-
-#elif defined(__linux__) || defined(UNIX)
-using namespace glm::gtx::compatibility;
-
-#elif defined(_WIN32) || defined(_WIN64)
-// for Windows
-// No support, sorry
-#endif
 
 typedef std::mt19937 RANDOM;  // the Mersenne Twister with a popular choice of parameters
 

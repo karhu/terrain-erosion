@@ -15,11 +15,9 @@
 #include "platform_includes.h"
 #include <glm/gtc/quaternion.hpp>
 
-#if defined(__APPLE__) || defined(__MACH__)
+// Backwards compatibility
+#define GLM_FORCE_RADIANS
 using namespace glm;
-#else
-using namespace glm::gtc::quaternion;
-#endif
 
 class Camera
 {

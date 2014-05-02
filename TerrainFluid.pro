@@ -51,6 +51,14 @@ mac {
     LIBS+=-lboost_system
     LIBS+=-lboost_filesystem
     LIBS+=-lGLEW
+    LIBS+=-lGL
+
+    copydata.commands = $(COPY_DIR) $$PWD/Resources $$OUT_PWD
+    first.depends = $(first) copydata
+    export(first.depends)
+    export(copydata.commands)
+    QMAKE_EXTRA_TARGETS += first copydata
+
 }
 
 

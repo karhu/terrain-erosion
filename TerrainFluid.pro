@@ -34,8 +34,8 @@ package_media.files += Resources/lambert_f.glsl
 
 mac {
     INCLUDEPATH += /usr/local/include
-    QMAKE_LFLAGS += -lglfw -framework Cocoa -framework OpenGL -framework IOKit #-framework OpenCL
-    LIBS+= -lboost_system-mt #-L/usr/local/lib/ -I/usr/local/include/
+    QMAKE_LFLAGS += -lglfw -framework Cocoa -framework OpenGL -framework IOKit
+    LIBS+= -lboost_system-mt
     LIBS+= -lboost_filesystem-mt
     LIBS+= -lglew
     LIBS+= -L/usr/local/lib

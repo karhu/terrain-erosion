@@ -19,6 +19,12 @@ typedef std::mt19937 RANDOM;  // the Mersenne Twister with a popular choice of p
 #else
 #include "MathUtil.h"
 #endif
+
+#if defined(__APPLE__) || defined(__MACH__)
+#include <dispatch/dispatch.h>
+dispatch_queue_t gcdq = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+#endif
+
 using namespace Simulation;
 using namespace glm;
 using namespace std;
@@ -112,12 +118,19 @@ void FluidSimulation::addRainDrop(const vec2 &pos, int rad, float amount)
     }
 }
 
+//dispatch_queue_t gcdq = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+//dispatch_apply(elements.size(), gcdq, ^(size_t idx)
+
 void FluidSimulation::smoothTerrain()
 {
     float maxD = 0.2f;
 
+#if defined(__APPLE__) || defined(__MACH__)
+    dispatch_apply(terrain.width(), gcdq, ^(size_t x)
+#else
     #pragma omp parallel for
     for (int x=0; x<terrain.width(); ++x)
+#endif
     {
         for (int y=0; y<terrain.height(); ++y)
         {
@@ -148,21 +161,35 @@ void FluidSimulation::smoothTerrain()
             }
         }
     }
+#if defined(__APPLE__) || defined(__MACH__)
+    );
+#endif
 
 
+#if defined(__APPLE__) || defined(__MACH__)
+    dispatch_apply(terrain.size(), gcdq, ^(size_t i)
+#else
     #pragma omp parallel for
     for (uint i=0; i<terrain.size(); ++i)
+#endif
     {
         terrain(i) = tmpSediment(i);
     }
 
+#if defined(__APPLE__) || defined(__MACH__)
+    );
+#endif
 }
 
 void FluidSimulation::computeSurfaceNormals()
 {
 
+#if defined(__APPLE__) || defined(__MACH__)
+    dispatch_apply(terrain.height(), gcdq, ^(size_t y)
+#else
     #pragma omp parallel for
     for (int y=0; y<terrain.height(); ++y)
+#endif
     {
         for (int x=0; x<terrain.width(); ++x)
         {
@@ -179,6 +206,9 @@ void FluidSimulation::computeSurfaceNormals()
             state.surfaceNormals(y,x) = N;
         }
     }
+#if defined(__APPLE__) || defined(__MACH__)
+    );
+#endif
 }
 
 
@@ -199,8 +229,12 @@ void FluidSimulation::simulateFlow(double dt)
 
     // Outflow Flux Computation with boundary conditions
     ////////////////////////////////////////////////////////////
+#if defined(__APPLE__) || defined(__MACH__)
+    dispatch_apply(uVel.height(), gcdq, ^(size_t y)
+#else
     #pragma omp parallel for
     for (uint y=0; y<uVel.height(); ++y)
+#endif
     {
         for (uint x=0; x<uVel.width(); ++x)
         {
@@ -263,11 +297,18 @@ void FluidSimulation::simulateFlow(double dt)
             bFlux(y,x) *= K;
         }
     }
+#if defined(__APPLE__) || defined(__MACH__)
+    );
+#endif
 
     // Update water surface and velocity field
     ////////////////////////////////////////////////////////////
+#if defined(__APPLE__) || defined(__MACH__)
+    dispatch_apply(uVel.height(), gcdq, ^(size_t y)
+#else
     #pragma omp parallel for
     for (int y=0; y<uVel.height(); ++y)
+#endif
     {
         for (int x=0; x<uVel.width(); ++x)
         {
@@ -291,6 +332,9 @@ void FluidSimulation::simulateFlow(double dt)
         }
     }
 
+#if defined(__APPLE__) || defined(__MACH__)
+    );
+#endif
 
 }
 
@@ -341,8 +385,12 @@ void FluidSimulation::simulateErosion(double dt)
     const float Ks = 0.0001f*12*10; // dissolving constant
     const float Kd = 0.0001f*12*10; // deposition constant
 
+#if defined(__APPLE__) || defined(__MACH__)
+    dispatch_apply(sediment.height(), gcdq, ^(size_t y)
+#else
     #pragma omp parallel for
     for (int y=0; y<sediment.height(); ++y)
+#endif
     {
         for (int x=0; x<sediment.width(); ++x)
         {
@@ -382,13 +430,20 @@ void FluidSimulation::simulateErosion(double dt)
             }
         }
     }
+#if defined(__APPLE__) || defined(__MACH__)
+    );
+#endif
 }
 
 void FluidSimulation::simulateSedimentTransportation(double dt)
 {
     // semi-lagrangian advection
+#if defined(__APPLE__) || defined(__MACH__)
+    dispatch_apply(sediment.height(), gcdq, ^(size_t y)
+#else
     #pragma omp parallel for
     for (uint y=0; y<sediment.height(); ++y)
+#endif
     {
         for (uint x=0; x<sediment.width(); ++x)
         {
@@ -421,20 +476,34 @@ void FluidSimulation::simulateSedimentTransportation(double dt)
 
         }
     }
+#if defined(__APPLE__) || defined(__MACH__)
+    );
+#endif
 
     // write back new values
+#if defined(__APPLE__) || defined(__MACH__)
+    dispatch_apply(sediment.size(), gcdq, ^(size_t i)
+#else
     #pragma omp parallel for
     for (uint i=0; i<sediment.size(); ++i)
+#endif
     {
         sediment(i) = tmpSediment(i);
     }
+#if defined(__APPLE__) || defined(__MACH__)
+    );
+#endif
 }
 
 void FluidSimulation::simulateEvaporation(double dt)
 {
     const float Ke = 0.00011*0.5; // evaporation constant
+#if defined(__APPLE__) || defined(__MACH__)
+    dispatch_apply(water.height(), gcdq, ^(size_t y)
+#else
     #pragma omp parallel for
     for (uint y=0; y<water.height(); ++y)
+#endif
     {
         for (uint x=0; x<water.width(); ++x)
         {
@@ -446,6 +515,9 @@ void FluidSimulation::simulateEvaporation(double dt)
             }
         }
     }
+#if defined(__APPLE__) || defined(__MACH__)
+    );
+#endif
 }
 
 void FluidSimulation::update(double dt, bool rain, bool flood)

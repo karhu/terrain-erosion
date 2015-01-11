@@ -24,7 +24,7 @@ TerrainFluidSimulation::TerrainFluidSimulation(uint dim)
     : _simulationState(dim,dim),
       _simulation(_simulationState),
       _rain(false),
-      _rainPos(180,180),
+      _rainPos(dim/2,dim/2),
       _flood(false)
 {}
 
